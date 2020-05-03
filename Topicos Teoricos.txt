@@ -1,0 +1,65 @@
+A maior dificuldade no desenvolvimento de software, por muitos anos foi a comunicação do paradigma orientado a objetos, com o banco de dados relacional.
+
+Java Persistence API (JPA) é a especificação padrão da plataforma Java EE (pacote javax.persistence) para mapeamento objeto-relacional e persistência de dados. JPA é apenas uma especificação (JSR 338): http://download.oracle.com/otn-pub/jcp/persistence-2_1-fr-eval-spec/JavaPersistence.pdf Para trabalhar com JPA é preciso incluir no projeto uma implementação da API (ex: Hibernate). 
+
+PRINCIPAIS CLASSES
+
+EntityManager https://docs.oracle.com/javaee/7/api/javax/persistence/EntityManager.html 
+Um objeto EntityManager encapsula uma conexão com a base de dados e serve para efetuar operações de acesso a dados (inserção, remoção, deleção, atualização) em entidades (clientes, produtos, pedidos, etc.) por ele monitoradas em um mesmo contexto de persistência. Escopo: tipicamente mantem-se uma instância única de EntityManager para cada thread do sistema (no caso de aplicações web, para cada requisição ao sistema). 
+
+
+EntityManagerFactory https://docs.oracle.com/javaee/7/api/javax/persistence/EntityManagerFactory.html Um objeto EntityManagerFactory é utilizado para instanciar objetos EntityManager. Escopo: tipicamente mantem-se uma instância única de EntityManagerFactory para toda aplicação. 
+
+
+Mapeamentos da classe dominio
+
+
+Numa arquitetura de uma aplicação JPA, teremos além dos arquivos de configuração, os mapeamentos que dirão que classe corresponde a que tabela, quais atributos correspondem aos campos da tabela
+
+Para indicar que uma classe é uma entidade de dominio, que irá corresponder a alguma tabela, é feita a anotação 
+@Entity acima da classe, e o atributo correspondente a chave-primaria da tabela é inserido o @id, indicando o @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+Por padrão o JPA irá criar uma mesma tabela com o nome da classe, e dentro dessa tabela irá criar os atributos com o mesmos atributos da classe.
+
+Se quisermos atribuir um nome diferente na tabela do BD a um atributo presente numa classe entidade, devemos inserir acima do atributo da classe o @Column(name="novoNomeNaTabelaBD")
+
+Próximo passo: Instanciamento da EntityManager, e EntityManagerFactory
+
+EntityManagerFactory emf = Persistence.createEntityManagerFactory("exemplo-jpa");
+
+O nome da persistenceUnity, passado como argumento ao método .createEntityManagerFactory  está no arquivo pom.xml
+
+Criação da Instancia do EntityManager
+
+EntityManager em = emf.createEntityManager();
+
+Com essa instanciação eu já tenho a conexão com o BD, e o contexto de persistência implementado(JPA).
+
+Para salvar um obj no banco de dados, usa-se o método persist()
+
+em.persist(pessoa1);
+
+Quando o JPA faz alguma transação que não é uma simples leitura do banco, é necessário criar uma transação:
+
+em.getTransaction().begin -> Para iniciar uma transação com o BD.
+
+em.getTransaction().commit() -> Para encerrar uma transação com o BD.
+
+Para fechar os EM's :
+
+em.close();
+emf.close();
+
+Buscando um obj por id:
+
+Pessoa p = em.find(Pessoa.class, 2);
+
+Para apagar um registro:
+
+em.getTransaction().begin();
+		
+		Pessoa p = em.find(Pessoa.class, 2);
+		
+		em.remove(p);
+		
+		em.getTransaction().commit();
